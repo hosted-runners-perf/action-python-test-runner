@@ -1,0 +1,26 @@
+name: 'Python test runner'
+description: 'Run tests based on a computed split'
+inputs:
+  group:  # id of input
+    description: 'Test group to run from the test split'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install deps
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Download pytest_buckets
+      uses: actions/download-artifact@v4.1.7
+      with:
+        name: pytest_buckets
+    - name: Run Tests
+      run: |
+         pytest \
+          $(sed -n "${{ inputs.group }},1p" pytest_buckets.txt) \
+            2>&1 | tee pytest-${{ inputs.group }}.txt
